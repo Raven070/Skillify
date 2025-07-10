@@ -1,0 +1,108 @@
+{% extends 'layout.html' %}
+{% block title %}Our Courses{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header with-bg">
+        <h1>Our Courses</h1>
+        <p>Explore your enrolled courses or discover new adventures in AI.</p>
+    </div>
+
+    <!-- Section 1: My Courses -->
+    <div class="section">
+        <h2 class="section-title" style="text-align: left; padding-left: 1rem; border-left: 4px solid var(--accent-blue); margin-bottom: 2rem;">My Courses</h2>
+        {% if enrolled_courses %}
+            <div class="cards-grid">
+                {% for course in enrolled_courses %}
+                <div class="card">
+                    <div class="card-image">
+                        <img src="{{ url_for('static', filename=course.thumbnail_url) if course.thumbnail_url else 'https://placehold.co/600x400/1E293B/E2E8F0?text=Course' }}" alt="{{ course.title }}">
+                    </div>
+                    <div class="card-content">
+                        <h3>{{ course.title }}</h3>
+                        <p>{{ course.description }}</p>
+                        <div class="course-meta-info">
+                           <span class="meta-item">
+                         <!-- Clock Icon SVG -->
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="meta-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                              <span>{{ course.duration_weeks or 'N/A' }} weeks</span>
+                                </span>
+                                <span class="meta-item">
+                              <!-- Users Icon SVG -->
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="meta-icon"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                              <span>{{ course.student_count or '0' }} students</span>
+                           </span>
+                        </div>
+                                              
+                        <div class="card-action">
+                            <a href="{{ url_for('course_detail', course_id=course.id) }}" class="cta-button">Go to Course</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card" style="background-color: transparent; border: 1px dashed var(--border-color);">
+                <div class="card-content" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                    <p>You are not currently enrolled in any courses.</p>
+                    <p>Explore the available courses below to start your journey!</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Separator -->
+    <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 4rem 0;">
+
+       <!-- Section 2: All Courses -->
+    <div class="section">
+        <h2 class="section-title" style="text-align: left; padding-left: 1rem; border-left: 4px solid var(--accent-purple); margin-bottom: 2rem;">All Available Courses</h2>
+        {% if other_courses %}
+            <div class="cards-grid">
+                {% for course in other_courses %}
+                <div class="card">
+                    <div class="card-image">
+                        <img src="{{ url_for('static', filename=course.thumbnail_url) if course.thumbnail_url else 'https://placehold.co/600x400/1E293B/E2E8F0?text=Course' }}" alt="{{ course.title }}">
+                    </div>
+                    <div class="card-content">
+                        <h3>{{ course.title }}</h3>
+                        <p>{{ course.description }}</p>
+                        <div class="course-meta-info">
+                            <span class="meta-item">
+                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="meta-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                               <span>{{ course.duration_weeks or 'N/A' }} weeks</span>
+                            </span>
+                            <span class="meta-item">
+                               <!-- Users Icon SVG -->
+                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="meta-icon"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                               <span>{{ course.student_count or '0' }} students</span>
+                            </span>
+                        </div>
+                        <div class="card-action">
+                            <!-- NEW LOGIC: Check the course status -->
+                            {% if course.status == 'active' %}
+                                <!-- If active, show the two buttons -->
+                                <div class="action-buttons-pair">
+                                    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="cta-button-secondary">View Details</a>
+                                    <a href="{{ url_for('request_course_access', course_id=course.id) }}" class="cta-button">Request Access</a>
+                                </div>
+                            {% else %}
+                                <!-- If not active, show the "Coming Soon" badge -->
+                                <span class="status-badge coming-soon">Coming Soon</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+             <div class="card" style="background-color: transparent; border: 1px dashed var(--border-color);">
+                <div class="card-content" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                    <p>Congratulations! You are enrolled in all available courses.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

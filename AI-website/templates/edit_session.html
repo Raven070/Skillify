@@ -1,0 +1,61 @@
+{% extends 'layout.html' %}
+{% block title %}Edit Session{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Edit Session: {{ session.title }}</h1>
+        <p>Modify the session details below. To replace a file (thumbnail or video), simply upload a new one.</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="card" style="max-width: 700px; margin: 2rem auto;">
+        <div class="card-content">
+            
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label for="title">Session Title</label>
+                <input type="text" id="title" name="title" value="{{ session.title }}" required>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Current Thumbnail</label>
+                <div>
+                    {% if session.thumbnail_url %}
+                        <img src="{{ url_for('static', filename=session.thumbnail_url) }}" alt="Current Thumbnail" style="width: 200px; height: auto; border-radius: 8px;">
+                    {% else %}
+                        <p style="color: var(--text-muted);">No thumbnail set.</p>
+                    {% endif %}
+                </div>
+                <label for="thumbnail_file" style="margin-top: 1rem;">Upload New Thumbnail (Optional)</label>
+                <input type="file" id="thumbnail_file" name="thumbnail_file" accept="image/png, image/jpeg, image/gif">
+            </div>
+
+            <!-- Video Edit Sections -->
+            {% for i in range(1, 5) %}
+                {% set video_url = session['video' ~ i ~ '_url'] %}
+                <div class="video-input-group">
+                    <label>Video {{ i }}</label>
+                    {% if video_url %}
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Current: {{ video_url }}</p>
+                    {% endif %}
+                    <label style="font-size: 0.9rem; margin-top: 0.5rem;">New URL (leave blank to keep current)</label>
+                    <input type="url" name="video{{ i }}_url" placeholder="https://www.youtube.com/embed/...">
+                    <label style="font-size: 0.9rem; margin-top: 0.5rem;">OR Upload New File (replaces URL and current file)</label>
+                    <input type="file" name="video{{ i }}_file" accept="video/mp4, video/webm">
+                </div>
+                
+            {% endfor %}
+            <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1.5rem;">
+                <input type="checkbox" id="is_free" name="is_free" value="1" {% if session.is_free %}checked{% endif %} style="width: auto;">
+                <label for="is_free" style="margin-bottom: 0;">Make this session available for all users (Free Preview)</label>
+            </div>
+            
+            <button type="submit" class="cta-button" style="width: 100%; border: none; margin-top: 1.5rem;">Update Session</button>
+        </div>
+    </form>
+</div>
+
+<style>
+    /* You can move these to your main style.css */
+    .video-input-group { border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; }
+    .form-group label, .video-input-group > label { display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 500; }
+</style>
+{% endblock %}

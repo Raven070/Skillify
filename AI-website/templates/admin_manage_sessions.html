@@ -1,0 +1,61 @@
+{% extends 'layout.html' %}
+{% block title %}Admin - Manage Sessions{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Manage Individual Sessions</h1>
+        <p>Here you can view, edit, and permanently delete existing sessions.</p>
+    </div>
+
+    <div class="admin-section">
+        {% if courses_with_sessions %}
+            {% for course in courses_with_sessions %}
+                {% if course.sessions %}
+                <div class="course-session-group card" style="margin-bottom: 2rem;">
+                    <h2 style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); margin:0;">{{ course.title }}</h2>
+                    {% for session_item in course.sessions %}
+                    <div class="session-management-item">
+                        <div class="session-details">
+                            <h4>{{ session_item.title }} (ID: {{ session_item.id }})</h4>
+                            <p>
+                                {% if session_item.is_free %}
+                                    <span class="free-badge">Free Preview</span>
+                                {% endif %}
+                                <!-- You can add more details here if needed -->
+                            </p>
+                        </div>
+                        <div class="session-actions" style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+                            <!-- Correct link to the edit session page -->
+                            <a href="{{ url_for('admin_edit_session', session_id=session_item.id) }}" class="cta-button-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Edit</a>
+                            
+                            <!-- Correct form for deleting a session -->
+                            <form method="POST" action="{{ url_for('admin_delete_session', session_id=session_item.id) }}" style="margin: 0;">
+                                <button type="submit" class="cta-button delete-button"
+                                        onclick="return confirm('Are you sure you want to permanently delete this session and all its related data? This cannot be undone.')">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <p style="color: var(--text-muted); text-align: center;">No courses with sessions found.</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    /* These styles should be in your main style.css, but are here for completeness */
+    .course-session-group h2 { font-size: 1.5rem; color: var(--text-light); }
+    .session-management-item { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--dark-bg); }
+    .session-management-item:last-child { border-bottom: none; }
+    .session-management-item .session-details { flex-grow: 1; padding-right: 1rem; }
+    .session-management-item .session-details h4 { margin: 0 0 0.5rem 0; font-size: 1.05rem; color: var(--text-light); }
+    .session-management-item .session-details p { font-size: 0.8rem; color: var(--text-muted); }
+    .free-badge { background-color: var(--accent-purple); color: white; font-size: 0.75rem; font-weight: 600; padding: 3px 8px; border-radius: 10px; margin-left: 0.5rem; vertical-align: middle; }
+</style>
+{% endblock %}

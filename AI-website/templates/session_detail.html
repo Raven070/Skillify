@@ -1,0 +1,137 @@
+{% extends 'layout.html' %}
+{% block title %}{{ session.title }} - Video {{ video_index }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    
+    <!-- This sets a variable for the background image URL. If no thumbnail exists, it defaults to 'none'. -->
+    {% set bg_image_url = url_for('static', filename=session.thumbnail_url) if session.thumbnail_url else 'none' %}
+
+    <!-- The style attribute now uses the variable we set above. -->
+    <div class="page-header" 
+         style="background-image: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.8)), url({{ bg_image_url }}); background-size: cover; background-position: center; padding: 2.5rem 1.5rem; margin-bottom: 2rem; margin-top: 2rem;">
+        <p style="color: var(--text-muted); margin-bottom: 0.5rem;">
+            <a href="{{ url_for('course_detail', course_id=session.course_id) }}" style="color: var(--text-muted);">Back to Course</a> / Session: {{ session.title }}
+        </p>
+        <h1>Video {{ video_index }} of {{ total_videos }}</h1>
+    </div>
+
+    <!-- Video Player Section -->
+    <div class="video-section">
+        <div class="video-container">
+            
+            <!-- If it's an external URL (from YouTube or Vimeo), use iframe -->
+            {% if 'http' in current_video_url %}
+                <iframe src="{{ current_video_url }}" 
+                        title="Video Player" 
+                        frameborder="0" 
+                        allow="autoplay; fullscreen; picture-in-picture" 
+                        allowfullscreen>
+                </iframe>
+            
+            <!-- If it's a local upload, use the <video> tag -->
+            {% else %}
+                <video controls controlslist="nodownload" style="width: 100%; border-radius: 12px;">
+                    <source src="{{ url_for('static', filename=current_video_url) }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Action Buttons Section -->
+    <div class="action-buttons">
+        <form method="POST" action="{{ url_for('mark_video_complete', session_id=session.id, video_index=video_index) }}" style="margin:0;">
+            {% if is_completed %}
+                <button type="button" class="cta-button completed-button" disabled>✅ Video Completed</button>
+            {% else %}
+                <button type="submit" class="cta-button">Mark Video as Complete</button>
+            {% endif %}
+        </form>
+
+        {% if video_index < total_videos %}
+            <a href="{{ url_for('session_detail', session_id=session.id, video_index=video_index + 1) }}" class="cta-button next-button">Next Video →</a>
+        {% else %}
+            <a href="{{ url_for('finish_session', session_id=session.id) }}" class="cta-button finish-button">Finish Session 🎉</a>
+        {% endif %}
+    </div>
+
+    <!-- Quiz Section (Display if the current video is the last one and quiz exists) -->
+    {% if video_index == total_videos and quizzes %}
+        <div class="quiz-section" style="margin-top: 3rem;">
+            <h2 class="section-title" style="text-align: left; font-size: 1.75rem; margin-bottom: 1rem;">Final Quiz for this Session</h2>
+            <form method="POST" action="{{ url_for('submit_quiz', session_id=session.id) }}" class="quiz-form card">
+                {% for quiz_item in quizzes %}
+                <fieldset class="quiz-question">
+                    <legend>{{ loop.index }}. {{ quiz_item.question }}</legend>
+                    <div class="quiz-options">
+                        <label><input type="radio" name="quiz_{{ quiz_item.id }}" value="1" required><span>{{ quiz_item.option1 }}</span></label>
+                        <label><input type="radio" name="quiz_{{ quiz_item.id }}" value="2"><span>{{ quiz_item.option2 }}</span></label>
+                        <label><input type="radio" name="quiz_{{ quiz_item.id }}" value="3"><span>{{ quiz_item.option3 }}</span></label>
+                        <label><input type="radio" name="quiz_{{ quiz_item.id }}" value="4"><span>{{ quiz_item.option4 }}</span></label>
+                    </div>
+                </fieldset>
+                {% endfor %}
+                <button type="submit" class="cta-button">Submit Quiz</button>
+            </form>
+        </div>
+    {% endif %}
+
+</div>
+
+<style>
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 2rem;
+        margin-bottom: 2rem; /* Added some bottom margin */
+    }
+    .completed-button {
+        background: var(--success) !important; /* Ensure success color is applied */
+        color: white !important;
+        cursor: not-allowed;
+    }
+    .next-button {
+        background: var(--dark-card);
+        border: 1px solid var(--accent-blue);
+        color: var(--accent-blue) !important; /* Ensure accent blue is applied */
+    }
+    .next-button:hover {
+        background: var(--accent-blue);
+        color: var(--dark-bg) !important;
+    }
+    .finish-button {
+        background: linear-gradient(90deg, #10B981, #38BDF8);
+        color: white !important;
+    }
+    .finish-button:hover {
+        opacity: 0.9;
+    }
+    /* Ensure form input styles are present if not globally defined */
+    .quiz-form label {
+        display: block;
+        background-color: #0F172A; /* Darker background for options */
+        padding: 1rem;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
+        cursor: pointer;
+        transition: border-color 0.3s, background-color 0.3s;
+        color: var(--text-light);
+    }
+    .quiz-form label:hover {
+        border-color: var(--accent-blue);
+    }
+    .quiz-form input[type="radio"] {
+        margin-right: 1rem;
+        accent-color: var(--accent-blue); /* Style the radio button itself */
+    }
+    .quiz-form input[type="radio"]:checked + span {
+        font-weight: 600;
+        color: var(--accent-blue);
+    }
+
+</style>
+{% endblock %}
