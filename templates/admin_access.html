@@ -1,0 +1,116 @@
+{% extends 'layout.html' %}
+{% block title %}Admin - Manage Student Access{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Manage Student Course Access</h1>
+        <p>Search for a student to grant or remove access to courses.</p>
+    </div>
+
+    <!-- Search Form -->
+    <div class="admin-section">
+        <h2>Search for a Student</h2>
+        <form method="GET" action="{{ url_for('admin_manage_access') }}" class="search-form">
+            <input type="text" name="search" placeholder="Enter name, email, or Account Code..." value="{{ search_query or '' }}">
+            <button type="submit" class="cta-button">Search</button>
+        </form>
+    </div>
+
+    <!-- Student List -->
+    <div class="student-list">
+        {% if students %}
+            {% for student in students %}
+            <div class="student-card">
+                <div class="student-details">
+                    <strong>{{ student.name }}</strong><br>
+                    Email: {{ student.email }}<br>
+                    Account Code: <span class="account-code">{{ student.account_code }}</span>
+                </div>
+
+                <!-- Grant Access Form -->
+                <div class="access-form-section">
+                    <h4>Grant Access</h4>
+                    <form method="POST" action="{{ url_for('admin_grant_access') }}" class="grant-form">
+                        <input type="hidden" name="user_id" value="{{ student.id }}">
+                        <input type="hidden" name="current_search" value="{{ search_query or '' }}">
+                        <select name="course_id" required>
+                            <option value="" disabled selected>Select a course to grant...</option>
+                            {% for course in all_courses %}
+                            <option value="{{ course.id }}">{{ course.title }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="cta-button">Grant</button>
+                    </form>
+                </div>
+
+                <!-- NEW: Remove Access Section -->
+                <div class="access-form-section">
+                    <h4>Current Access (Remove)</h4>
+                    {% if student.enrolled_courses %}
+                        {% for enrolled_course in student.enrolled_courses %}
+                        <div class="enrolled-course-item">
+                            <span>{{ enrolled_course.title }}</span>
+                            <form method="POST" action="{{ url_for('admin_remove_access') }}">
+                                <input type="hidden" name="user_id" value="{{ student.id }}">
+                                <input type="hidden" name="course_id" value="{{ enrolled_course.id }}">
+                                <input type="hidden" name="current_search" value="{{ search_query or '' }}">
+                                <button type="submit" class="cta-button delete-button"
+                                        onclick="return confirm('Are you sure you want to remove access to this course for this student?')">
+                                    Remove
+                                </button>
+                            </form>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">No courses assigned.</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>No students found for this search.</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    /* Add or merge these styles into your main style.css */
+    .student-card {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    .access-form-section {
+        border-top: 1px solid var(--border-color);
+        padding-top: 1rem;
+    }
+    .access-form-section h4 {
+        margin-bottom: 0.75rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+    .enrolled-course-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--dark-bg);
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        margin-bottom: 0.5rem;
+    }
+    .enrolled-course-item span {
+        font-weight: 500;
+    }
+    .enrolled-course-item form {
+        margin: 0;
+        padding: 0;
+        background: none;
+        box-shadow: none;
+    }
+    .enrolled-course-item .delete-button {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}
